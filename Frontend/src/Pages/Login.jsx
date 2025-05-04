@@ -10,10 +10,29 @@ const Login = () => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log('Login Data:', formData);
-    // Implement actual login logic here
+    try {
+      const response = await fetch('http://localhost:5000/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData),
+      });
+
+      const data = await response.json();
+      if (response.ok) {
+        // alert('Login successful!');
+        localStorage.setItem('token', data.token); // Save JWT
+        localStorage.setItem('user', JSON.stringify(data.user)); // Save user info
+        // ✅ Optional: redirect to dashboard
+        window.location.href = '/'; 
+      } else {
+        alert(data.message || 'Login failed');
+      }
+    } catch (err) {
+      console.error('Login Error:', err);
+      alert('An error occurred');
+    }
   };
 
   return (

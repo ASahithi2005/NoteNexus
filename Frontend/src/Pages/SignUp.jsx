@@ -5,22 +5,45 @@ const SignUp = () => {
     name: '',
     email: '',
     password: '',
-    role: 'student',
+    role: 'student', // or 'mentor'
   });
 
   const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log('Signup Data:', formData);
-    // Implement actual sign-up logic here
+    try {
+      const response = await fetch('http://localhost:5000/api/auth/signin', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData)
+      });
+
+      const data = await response.json();
+      if (response.ok) {
+        alert('Signup successful!');
+        console.log('Token:', data.token);
+        localStorage.setItem('token', data.token);
+        localStorage.setItem('user', JSON.stringify(data.user));
+        // Redirect to dashboard if needed
+        window.location.href = '/'; 
+      } else {
+        alert(data.msg || data.error || 'Signup failed');
+      }
+    } catch (err) {
+      console.error('Signup Error:', err);
+      alert('An error occurred during signup.');
+    }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100 px-4 ">
-      <form className="bg-white p-8 rounded-xl shadow-md w-full max-w-md" onSubmit={handleSubmit}>
+    <div className="min-h-screen flex items-center justify-center bg-gray-100 px-4">
+      <form
+        className="bg-white p-8 rounded-xl shadow-md w-full max-w-md"
+        onSubmit={handleSubmit}
+      >
         <h2 className="text-2xl font-bold mb-6 text-center">Sign Up</h2>
         <input
           type="text"
@@ -58,7 +81,10 @@ const SignUp = () => {
           <option value="student">Student</option>
           <option value="mentor">Mentor</option>
         </select>
-        <button type="submit" className="w-full bg-blue-600 text-white p-2 rounded hover:bg-blue-700">
+        <button
+          type="submit"
+          className="w-full bg-blue-600 text-white p-2 rounded hover:bg-blue-700"
+        >
           Create Account
         </button>
       </form>
