@@ -3,6 +3,9 @@ import Dashboard from './Pages/DashBoard';
 import Login from './Pages/Login';
 import SignUp from './Pages/SignUp';
 import MainLayout from './Layout/MainLayout';
+import ErrorBoundary from './Components/ErrorBoundary';
+import AddCourse from './Pages/AddCourse';
+import EnrolledStudents from './Components/EnrolledStudents';  // Import EnrolledStudents
 
 function App() {
   return (
@@ -11,7 +14,9 @@ function App() {
         <Route
           path="/"
           element={
+            <ErrorBoundary>
               <Dashboard />
+            </ErrorBoundary>
           }
         />
         <Route
@@ -27,6 +32,27 @@ function App() {
           element={
             <MainLayout>
               <SignUp />
+            </MainLayout>
+          }
+        />
+        <Route
+          path="/addcourse"
+          element={
+            <MainLayout>
+              <ErrorBoundary>
+                <AddCourse />
+              </ErrorBoundary>
+            </MainLayout>
+          }
+        />
+        {/* New route for enrolled students */}
+        <Route
+          path="/enrolled-students/:courseId"
+          element={
+            <MainLayout>
+              <ErrorBoundary>
+                <EnrolledStudents />
+              </ErrorBoundary>
             </MainLayout>
           }
         />
