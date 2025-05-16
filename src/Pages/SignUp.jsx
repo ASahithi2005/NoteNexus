@@ -5,7 +5,7 @@ const SignUp = () => {
     name: '',
     email: '',
     password: '',
-    role: 'student', // or 'mentor'
+    role: 'student',
   });
 
   const handleChange = (e) => {
@@ -24,11 +24,10 @@ const SignUp = () => {
       const data = await response.json();
       if (response.ok) {
         alert('Signup successful!');
-        console.log('Token:', data.token);
         localStorage.setItem('token', data.token);
         localStorage.setItem('user', JSON.stringify(data.user));
-        // Redirect to dashboard if needed
-        window.location.href = '/'; 
+        localStorage.setItem('role', data.user.role); // ✅ Save role
+        window.location.href = '/';
       } else {
         alert(data.msg || data.error || 'Signup failed');
       }
@@ -40,10 +39,7 @@ const SignUp = () => {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100 px-4">
-      <form
-        className="bg-white p-8 rounded-xl shadow-md w-full max-w-md"
-        onSubmit={handleSubmit}
-      >
+      <form className="bg-white p-8 rounded-xl shadow-md w-full max-w-md" onSubmit={handleSubmit}>
         <h2 className="text-2xl font-bold mb-6 text-center">Sign Up</h2>
         <input
           type="text"
@@ -81,10 +77,7 @@ const SignUp = () => {
           <option value="student">Student</option>
           <option value="mentor">Mentor</option>
         </select>
-        <button
-          type="submit"
-          className="w-full bg-blue-600 text-white p-2 rounded hover:bg-blue-700"
-        >
+        <button type="submit" className="w-full bg-blue-600 text-white p-2 rounded hover:bg-blue-700">
           Create Account
         </button>
       </form>
