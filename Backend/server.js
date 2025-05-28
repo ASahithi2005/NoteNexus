@@ -2,6 +2,7 @@ import express from 'express';
 import mongoose from 'mongoose';
 import cors from 'cors';
 import dotenv from 'dotenv';
+import path from 'path';
 dotenv.config();
 
 const app = express();
@@ -20,15 +21,16 @@ import authRoutes from './routes/auth.js';
 import courseRoutes from './routes/courses.js';       
 import noteRoutes from './routes/notes.js';           
 import assignmentRoutes from './routes/assignments.js'; 
+import courseDetailRoutes from './routes/courseDetail.js';
 
 // Use routes
 app.use('/api/auth', authRoutes);
 app.use('/api/courses', courseRoutes);
 app.use('/api/notes', noteRoutes);
 app.use('/api/assignments', assignmentRoutes);
+app.use('/api/courseDetail', courseDetailRoutes);
 
-// Static folder for uploaded files (e.g. PDFs)
-app.use('/uploads', express.static('uploads'));
+app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
 
 app.get('/', (req, res) => {
   res.send('API is running...');

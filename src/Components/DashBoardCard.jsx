@@ -1,10 +1,10 @@
 import { useNavigate } from 'react-router-dom';
 
-const DashBoardCard = ({ subject, onJoin, isMentor }) => {
+const DashBoardCard = ({ subject, onJoin, isMentor, user }) => {
   const navigate = useNavigate();
 
-  const handleGoToEnrolledStudents = () => {
-    navigate(`/enrolled-students/${subject._id}`, { state: { courseTitle: subject.title } });
+  const handleOpenCourse = () => {
+    navigate(`/courses/${subject._id}`);
   };
 
   return (
@@ -26,16 +26,29 @@ const DashBoardCard = ({ subject, onJoin, isMentor }) => {
       )}
 
       {!isMentor && subject.joined && (
-        <button className="bg-blue-500 text-white px-4 py-2 ">Joined</button>
+        <button
+          onClick={handleOpenCourse}
+          className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-700"
+        >
+          Open
+        </button>
       )}
 
       {isMentor && (
-        <button
-          onClick={handleGoToEnrolledStudents}
-          className="mt-2 bg-green-600 text-white px-3 py-1 rounded hover:bg-green-700"
-        >
-          View Enrolled Students
-        </button>
+        <>
+          <button
+            onClick={handleOpenCourse}
+            className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 mb-2"
+          >
+            Open
+          </button>
+          <button
+            onClick={() => navigate(`/enrolled-students/${subject._id}`)}
+            className="bg-green-600 text-white px-3 py-1 rounded hover:bg-green-700"
+          >
+            View Enrolled Students
+          </button>
+        </>
       )}
     </div>
   );

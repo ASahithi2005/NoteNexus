@@ -59,7 +59,6 @@ const AddCourse = () => {
       colorName: formData.colorName,
       mentorName: formData.mentorName
     };
-
     try {
       const response = await fetch('http://localhost:5000/api/courses/create', {
         method: 'POST',

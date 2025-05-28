@@ -60,7 +60,7 @@ const SideBar = () => {
             <Link to="/settings" className="flex items-center gap-3 text-gray-700 px-2 py-2 rounded-lg hover:bg-gray-100 transition-colors duration-200">
               <FiSettings /> Settings
             </Link>
-          </li>
+          </li> 
         </ul>
       </nav>
     </aside>
