@@ -1,13 +1,19 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import Dashboard from './Pages/DashBoard';
 import Login from './Pages/Login';
 import SignUp from './Pages/SignUp';
 import MainLayout from './Layout/MainLayout';
 import ErrorBoundary from './Components/ErrorBoundary';
 import AddCourse from './Pages/AddCourse';
-import EnrolledStudents from './Components/EnrolledStudents';  // Import EnrolledStudents
+import EnrolledStudents from './Components/EnrolledStudents';
+import CourseDetail from './Pages/CourseDetail';
 
 function App() {
+  const storedUser = localStorage.getItem('user');
+  const user = storedUser ? JSON.parse(storedUser) : null;
+  const storedToken = localStorage.getItem('token'); 
+const token = storedToken || null;
+
   return (
     <BrowserRouter>
       <Routes>
@@ -38,21 +44,38 @@ function App() {
         <Route
           path="/addcourse"
           element={
-            <MainLayout>
-              <ErrorBoundary>
-                <AddCourse />
-              </ErrorBoundary>
-            </MainLayout>
+            user?.role === 'mentor' ? (
+              <MainLayout>
+                <ErrorBoundary>
+                  <AddCourse />
+                </ErrorBoundary>
+              </MainLayout>
+            ) : (
+              <Navigate to="/" />
+            )
           }
         />
-        {/* New route for enrolled students */}
         <Route
           path="/enrolled-students/:courseId"
           element={
+            user?.role === 'mentor' ? (
+              <MainLayout>
+                <ErrorBoundary>
+                  <EnrolledStudents />
+                </ErrorBoundary>
+              </MainLayout>
+            ) : (
+              <Navigate to="/" />
+            )
+          }
+        />
+        <Route
+          path="/courses/:courseId"
+          element={
             <MainLayout>
-              <ErrorBoundary>
-                <EnrolledStudents />
-              </ErrorBoundary>
+            <ErrorBoundary>
+              <CourseDetail user={user} token={token}/>
+            </ErrorBoundary>
             </MainLayout>
           }
         />
