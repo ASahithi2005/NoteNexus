@@ -11,6 +11,9 @@ const DashBoard = () => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  // Retrieve token once
+  const token = localStorage.getItem('token');
+
   // Load user if logged in
   useEffect(() => {
     const storedUser = localStorage.getItem('user');
@@ -25,22 +28,22 @@ const DashBoard = () => {
     }
   }, []);
 
-  // Fetch courses regardless of login
+  // Fetch courses and trust backend's joined flags
   useEffect(() => {
     const fetchCourses = async () => {
+      setLoading(true);
       try {
-        const response = await fetch('http://localhost:5000/api/courses');
+        const response = await fetch('http://localhost:5000/api/courses', {
+          headers: {
+            Authorization: token ? `Bearer ${token}` : '',
+          },
+        });
         const data = await response.json();
 
         if (response.ok) {
-          const joinedCourseIds = user?.joinedCourses || [];
-
-          const updatedCourses = data.map((course) => ({
-            ...course,
-            joined: joinedCourseIds.includes(course._id),
-          }));
-
-          setAvailableSubjects(updatedCourses);
+          // Use backend's joined info directly
+          setAvailableSubjects(data);
+          setError(null);
         } else {
           setError(data.message || 'Failed to fetch courses');
         }
@@ -53,16 +56,15 @@ const DashBoard = () => {
     };
 
     fetchCourses();
-  }, [user]);
+  }, [user, token]);
 
-  // Join course handler - uses course _id
+  // Join course handler
   const handleJoin = async (courseId) => {
     if (!user || user.role !== 'student') {
       alert('Only students can join courses. Please log in as a student.');
       return;
     }
 
-    const token = localStorage.getItem('token');
     try {
       const response = await fetch(`http://localhost:5000/api/courses/join/${courseId}`, {
         method: 'POST',
@@ -96,20 +98,24 @@ const DashBoard = () => {
     }
   };
 
-  // Fetch enrolled students for a course (mentor only) - uses course _id
+  // Fetch enrolled students for a course (mentor only)
   const fetchEnrolledStudents = async (courseId) => {
-    const token = localStorage.getItem('token');
-    const response = await fetch(`http://localhost:5000/api/courses/${courseId}/students`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
+    try {
+      const response = await fetch(`http://localhost:5000/api/courses/${courseId}/students`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
 
-    if (!response.ok) {
-      throw new Error('Failed to fetch students');
+      if (!response.ok) {
+        throw new Error('Failed to fetch students');
+      }
+      const data = await response.json();
+      return data.students; // expected array of { _id, name, email }
+    } catch (err) {
+      console.error('Fetch Enrolled Students Error:', err);
+      throw err;
     }
-    const data = await response.json();
-    return data.students; // expected to be array of { _id, name, email }
   };
 
   return (
@@ -145,9 +151,7 @@ const DashBoard = () => {
                   key={course._id}
                   subject={course}
                   onJoin={handleJoin}
-                  showJoinButton={user && user.role === 'student' && !course.joined}
                   isMentor={user?.role === 'mentor'}
-                  fetchEnrolledStudents={fetchEnrolledStudents}
                 />
               ))}
             </div>
