@@ -46,6 +46,47 @@ router.post('/create', auth, async (req, res) => {
   }
 });
 
+// Delete a course (mentor only, only creator can delete)
+router.delete('/:id', auth, async (req, res) => {
+  try {
+    if (req.user.role !== 'mentor') {
+      return res.status(403).json({ msg: 'Unauthorized' });
+    }
+
+    const course = await Course.findById(req.params.id);
+
+    if (!course) {
+      return res.status(404).json({ msg: 'Course not found' });
+    }
+
+    // Only creator mentor can delete
+    if (course.createdBy.toString() !== req.user.id) {
+      return res.status(403).json({ msg: 'Not authorized to delete this course' });
+    }
+
+    // Remove course
+    await Course.findByIdAndDelete(req.params.id);
+
+    // Remove course reference from mentor's createdCourses array
+    await Mentor.findByIdAndUpdate(req.user.id, {
+      $pull: { createdCourses: req.params.id },
+    });
+
+    // Optional: You might want to also remove the course from students' joinedCourses arrays
+    // This is up to your design, here's an example:
+    // await Student.updateMany(
+    //   { joinedCourses: req.params.id },
+    //   { $pull: { joinedCourses: req.params.id } }
+    // );
+
+    return res.json({ msg: 'Course deleted successfully' });
+  } catch (err) {
+    console.error('Delete Course Error:', err);
+    return res.status(500).json({ error: err.message });
+  }
+});
+
+
 // Student joins a course
 router.post('/join/:id', auth, async (req, res) => {
   try {

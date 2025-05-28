@@ -141,23 +141,51 @@ const CourseDetail = ({ user, token }) => {
   };
 
   const renderAssignments = () => {
-    const questions = (course.assignments || []).filter(f => f.type === 'question');
-    const answers   = (course.assignments || []).filter(f => f.type === 'answer');
-    return (
-      <>
-        <div className="mb-4">
-          <h3 className="font-semibold">Questions</h3>
-          {questions.map((it,i) => renderFileItem(it,'assignments',i)) ||
-           <p>No questions.</p>}
-        </div>
-        <div className="mb-4">
-          <h3 className="font-semibold">Answers</h3>
-          {answers.map((it,i) => renderFileItem(it,'assignments',i)) ||
-           <p>No answers.</p>}
-        </div>
-      </>
-    );
-  };
+  const questions = (course.assignments || []).filter(f => f.type === 'question');
+  const answers   = (course.assignments || []).filter(f => f.type === 'answer');
+
+  return (
+    <>
+      <div className="mb-4">
+        <h3 className="font-semibold">Questions</h3>
+        {questions.length > 0 ? (
+          questions.map((it, i) => renderFileItem(it, 'assignments', i))
+        ) : (
+          <p>No questions.</p>
+        )}
+
+        {/* Show Add Question button right under questions */}
+        {canUpload('assignments') && (
+          <div className="mt-2">
+            <input
+              id="fileInput-assignments"
+              type="file"
+              onChange={handleFileChange}
+              className="mb-2"
+            />
+            <button
+              onClick={() => handleUpload('assignments')}
+              disabled={uploading}
+              className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+            >
+              {uploading ? 'Uploading...' : 'Add Assignment Question'}
+            </button>
+          </div>
+        )}
+      </div>
+
+      <div className="mb-4">
+        <h3 className="font-semibold">Answers</h3>
+        {answers.length > 0 ? (
+          answers.map((it, i) => renderFileItem(it, 'assignments', i))
+        ) : (
+          <p>No answers.</p>
+        )}
+      </div>
+    </>
+  );
+};
+
 
   if (loading) return <div>Loading...</div>;
   if (error)   return <div className="text-red-600">{error}</div>;

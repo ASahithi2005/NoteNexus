@@ -98,6 +98,38 @@ const DashBoard = () => {
     }
   };
 
+  // Delete course handler (mentor only)
+  const handleDelete = async (courseId) => {
+    if (!user || user.role !== 'mentor') {
+      alert('Only mentors can delete courses.');
+      return;
+    }
+
+    if (!window.confirm('Are you sure you want to delete this course?')) {
+      return;
+    }
+
+    try {
+      const response = await fetch(`http://localhost:5000/api/courses/${courseId}`, {
+        method: 'DELETE',
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (response.ok) {
+        setAvailableSubjects((prev) => prev.filter((course) => course._id !== courseId));
+        setError(null);
+      } else {
+        const data = await response.json();
+        setError(data.message || 'Failed to delete course');
+      }
+    } catch (err) {
+      console.error('Delete Error:', err);
+      setError('Error deleting course');
+    }
+  };
+
   // Fetch enrolled students for a course (mentor only)
   const fetchEnrolledStudents = async (courseId) => {
     try {
@@ -151,7 +183,8 @@ const DashBoard = () => {
                   key={course._id}
                   subject={course}
                   onJoin={handleJoin}
-                  isMentor={user?.role === 'mentor'}
+                  onDelete={handleDelete} 
+                  user={user}              
                 />
               ))}
             </div>

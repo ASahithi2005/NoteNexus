@@ -7,6 +7,10 @@ import ErrorBoundary from './Components/ErrorBoundary';
 import AddCourse from './Pages/AddCourse';
 import EnrolledStudents from './Components/EnrolledStudents';
 import CourseDetail from './Pages/CourseDetail';
+import AllAssignmentsPage from './Pages/AllAssignmentsPage';
+import StudentsPage from './Pages/StudentPage';
+import NotesPage from './Pages/NotesPage';
+import SettingsPage from './Pages/SettingsPage';
 
 function App() {
   const storedUser = localStorage.getItem('user');
@@ -79,7 +83,16 @@ const token = storedToken || null;
             </MainLayout>
           }
         />
+        <Route path="/assignments" element={
+          <MainLayout><AllAssignmentsPage token={token} /></MainLayout> }></Route>
+          <Route path="/students" element={
+          <MainLayout><StudentsPage token={token} /></MainLayout> }></Route>
+          <Route path="/resources" element={
+          <MainLayout><NotesPage token={token} /></MainLayout> }></Route>
+          <Route path="/settings" element={
+          <MainLayout><SettingsPage token={token} /></MainLayout> }></Route>
       </Routes>
+
     </BrowserRouter>
   );
 }
