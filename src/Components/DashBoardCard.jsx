@@ -1,6 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 
-const DashBoardCard = ({ subject, onJoin, isMentor, user }) => {
+const DashBoardCard = ({ subject, onJoin, isMentor }) => {
   const navigate = useNavigate();
 
   const handleOpenCourse = () => {
@@ -35,20 +35,20 @@ const DashBoardCard = ({ subject, onJoin, isMentor, user }) => {
       )}
 
       {isMentor && (
-        <>
+        <div className="flex space-x-3">
           <button
             onClick={handleOpenCourse}
-            className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 mb-2"
+            className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
           >
             Open
           </button>
           <button
             onClick={() => navigate(`/enrolled-students/${subject._id}`)}
-            className="bg-green-600 text-white px-3 py-1 rounded hover:bg-green-700"
+            className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 shadow-md"
           >
             View Enrolled Students
           </button>
-        </>
+        </div>
       )}
     </div>
   );
