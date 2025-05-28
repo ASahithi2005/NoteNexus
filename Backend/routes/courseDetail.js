@@ -34,7 +34,7 @@ const storage = multer.diskStorage({
 const upload = multer({ storage });
 
 /**
- * GET /api/courses/:id
+ * GET /api/courseDetail/:id
  * Get course details with populated uploader names
  */
 router.get('/:id', auth, async (req, res) => {
@@ -59,10 +59,8 @@ router.get('/:id', auth, async (req, res) => {
 });
 
 /**
- * POST /api/courses/:id/:section
+ * POST /api/courseDetail/:id/:section
  * Upload files for syllabus, notes, assignments
- * - Mentors can upload syllabus, notes, assignments (questions)
- * - Students can upload assignments (answers) only
  */
 router.post('/:id/:section', auth, upload.single('file'), async (req, res) => {
   try {
@@ -91,13 +89,15 @@ router.post('/:id/:section', auth, upload.single('file'), async (req, res) => {
     }
 
     // Assign file type for assignments
-    const fileType = section === 'assignments' ? (isMentor ? 'question' : 'answer') : undefined;
+    const fileType = section === 'assignments' ? (isMentor ? 'question' : 'answer') : 'file';
 
+    // Push new file entry to the course document array
     course[section] = course[section] || [];
     course[section].push({
       title: req.body.title || req.file.originalname,
       fileUrl: req.file.path.replace(/\\/g, '/'),
       uploadedBy: req.user.id,
+      uploadedByModel: req.user.role === 'mentor' ? 'Mentor' : 'Student', // IMPORTANT: Must match schema enum
       role: req.user.role,
       type: fileType,
       uploadedAt: new Date(),
@@ -105,13 +105,11 @@ router.post('/:id/:section', auth, upload.single('file'), async (req, res) => {
 
     await course.save();
 
-    // Return fully populated updated course to frontend
+    // Return updated course with populated fields
     const updatedCourse = await Course.findById(id)
       .populate('syllabus.uploadedBy', 'name')
       .populate('notes.uploadedBy', 'name')
       .populate('assignments.uploadedBy', 'name');
-
-      console.log('Updated course after upload:', updatedCourse);
 
     return res.status(200).json(updatedCourse);
   } catch (err) {
@@ -121,7 +119,7 @@ router.post('/:id/:section', auth, upload.single('file'), async (req, res) => {
 });
 
 /**
- * PUT /api/courses/:id/description
+ * PUT /api/courseDetail/:id/description
  * Mentor updates course description
  */
 router.put('/:id/description', auth, async (req, res) => {
