@@ -1,6 +1,8 @@
 import express from 'express';
 import auth from '../middleware/auth.js';
 import Course from '../Models/Course.js';
+import Mentor from '../Models/Mentor.js';
+import Student from '../Models/student.js';
 import multer from 'multer';
 import fs from 'fs';
 import path from 'path';
@@ -42,17 +44,31 @@ const storage = multer.diskStorage({
 });
 const upload = multer({ storage });
 
+// Helper to manually populate uploadedBy with Mentor or Student name
+async function populateUploadedBy(files) {
+  return Promise.all(
+    files.map(async (file) => {
+      if (!file.uploadedBy) return file;
+
+      if (file.uploadedByModel === 'Mentor') {
+        const mentor = await Mentor.findById(file.uploadedBy).select('name');
+        file.uploadedBy = mentor;
+      } else if (file.uploadedByModel === 'Student') {
+        const student = await Student.findById(file.uploadedBy).select('name');
+        file.uploadedBy = student;
+      }
+      return file;
+    })
+  );
+}
+
 /**
  * GET /api/courseDetail/:id
- * Get course details with uploader names populated
+ * Get course details with uploader names populated manually
  */
 router.get('/:id', auth, async (req, res) => {
   try {
-    const course = await Course.findById(req.params.id)
-      .populate('syllabus.uploadedBy', 'name')
-      .populate('notes.uploadedBy', 'name')
-      .populate('assignments.uploadedBy', 'name');
-
+    const course = await Course.findById(req.params.id);
     if (!course) return res.status(404).json({ msg: 'Course not found' });
 
     const isMentor = req.user.role === 'mentor' && course.createdBy.toString() === req.user.id;
@@ -61,6 +77,10 @@ router.get('/:id', auth, async (req, res) => {
     if (!isMentor && !isStudent) {
       return res.status(403).json({ msg: 'Access denied' });
     }
+
+    course.syllabus = await populateUploadedBy(course.syllabus || []);
+    course.notes = await populateUploadedBy(course.notes || []);
+    course.assignments = await populateUploadedBy(course.assignments || []);
 
     res.status(200).json(course);
   } catch (err) {
@@ -98,16 +118,14 @@ router.post('/:id/:section', auth, upload.single('file'), async (req, res) => {
       return res.status(400).json({ msg: 'No file uploaded' });
     }
 
-    // File type info
     const fileType = section === 'assignments'
       ? (isMentor ? 'question' : 'answer')
       : 'file';
 
-    // Push new file entry
     course[section] = course[section] || [];
     course[section].push({
       title: req.body.title || req.file.originalname,
-      fileUrl: req.file.path.replace(/\\/g, '/'), // normalize Windows path
+      fileUrl: req.file.path.replace(/\\/g, '/'),
       uploadedBy: req.user.id,
       uploadedByModel: req.user.role === 'mentor' ? 'Mentor' : 'Student',
       role: req.user.role,
@@ -117,13 +135,12 @@ router.post('/:id/:section', auth, upload.single('file'), async (req, res) => {
 
     await course.save();
 
-    // Return updated course with populated uploader names
-    const updatedCourse = await Course.findById(id)
-      .populate('syllabus.uploadedBy', 'name')
-      .populate('notes.uploadedBy', 'name')
-      .populate('assignments.uploadedBy', 'name');
+    // Manually populate after saving
+    course.syllabus = await populateUploadedBy(course.syllabus || []);
+    course.notes = await populateUploadedBy(course.notes || []);
+    course.assignments = await populateUploadedBy(course.assignments || []);
 
-    res.status(200).json(updatedCourse);
+    res.status(200).json(course);
   } catch (err) {
     console.error('File Upload Error:', err);
     res.status(500).json({ error: 'Server error. Please try again.' });
@@ -191,12 +208,10 @@ router.delete('/:id/:section/:index', auth, async (req, res) => {
       return res.status(403).json({ msg: 'Only mentors or the student who uploaded can delete this assignment.' });
     }
 
-    // Delete physical file (if exists)
+    // Delete physical file if exists
     if (fileEntry?.fileUrl) {
-      // Resolve relative to project root
       let filePath = fileEntry.fileUrl;
       if (!filePath.startsWith('uploads')) {
-        // If fileUrl is absolute or external, do not attempt delete
         filePath = null;
       }
       if (filePath) {
@@ -207,16 +222,15 @@ router.delete('/:id/:section/:index', auth, async (req, res) => {
       }
     }
 
-    // Remove from array & save
     course[section].splice(idx, 1);
     await course.save();
 
-    const updatedCourse = await Course.findById(id)
-      .populate('syllabus.uploadedBy', 'name')
-      .populate('notes.uploadedBy', 'name')
-      .populate('assignments.uploadedBy', 'name');
+    // Manually populate after delete
+    course.syllabus = await populateUploadedBy(course.syllabus || []);
+    course.notes = await populateUploadedBy(course.notes || []);
+    course.assignments = await populateUploadedBy(course.assignments || []);
 
-    res.status(200).json(updatedCourse);
+    res.status(200).json(course);
   } catch (err) {
     console.error('Delete File Error:', err);
     res.status(500).json({ error: 'Server error. Please try again.' });
@@ -281,6 +295,10 @@ router.post('/:courseId/:section/:index/summarize', auth, async (req, res) => {
     }
 
     const data = new Uint8Array(fs.readFileSync(pdfPath));
+
+    // Fix for UnknownErrorException warning
+    pdfjsLib.GlobalWorkerOptions.standardFontDataUrl = '';
+
     const pdfDoc = await pdfjsLib.getDocument({ data }).promise;
 
     let fullText = '';

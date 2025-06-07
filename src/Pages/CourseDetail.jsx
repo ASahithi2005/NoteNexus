@@ -236,10 +236,13 @@ const CourseDetail = ({ user, token }) => {
 
         <p className="mt-2">{item.title}</p>
         <p className="text-sm text-gray-500">
-          Uploaded by{' '}
-          {item.uploadedBy?.name ||
-            (item.role === 'mentor' ? 'Mentor' : 'Student')}
-        </p>
+  Uploaded by{' '}
+  {item.uploadedBy?.name
+    ? item.uploadedBy.name
+    : (item.role === 'mentor' ? 'Mentor' : 'Student')}
+</p>
+
+
 
         {canDelete && (
           <button
