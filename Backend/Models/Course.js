@@ -8,6 +8,10 @@ const fileSchema = new mongoose.Schema({
   role: { type: String, enum: ['mentor', 'student'], required: true },           // uploader role
   type: { type: String, enum: ['question', 'answer', 'file'], default: 'file' }, // file type (assignments only)
   uploadedAt: { type: Date, default: Date.now },
+  summary: {
+    type: String,
+    default: undefined // present only if added
+  }
 });
 
 const courseSchema = new mongoose.Schema({

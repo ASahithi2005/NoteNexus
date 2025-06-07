@@ -18,23 +18,23 @@ mongoose.connect(process.env.MONGO_URI, {
 
 // Import routes
 import authRoutes from './routes/auth.js';
-import courseRoutes from './routes/courses.js';       
-import noteRoutes from './routes/notes.js';           
+import courseRoutes from './routes/courses.js';                
 import assignmentRoutes from './routes/assignments.js'; 
 import courseDetailRoutes from './routes/courseDetail.js';
 import courseAggregates from './routes/courseAggregates.js';
 import studentsRoutes from './routes/students.js';
 import userRoutes from './routes/users.js';
+// import summarizeRouter from './routes/summarization.js';
 
 // Use routes
 app.use('/api/auth', authRoutes);
 app.use('/api/courses', courseRoutes);
-app.use('/api/notes', noteRoutes);
 app.use('/api/assignments', assignmentRoutes);
 app.use('/api/courseDetail', courseDetailRoutes);
 app.use('/api/courseAggregates', courseAggregates);
 app.use('/api/students', studentsRoutes);
 app.use('/api/users', userRoutes);
+// app.use('/api/courseDetail', summarizeRouter);
 
 
 app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
@@ -45,3 +45,7 @@ app.get('/', (req, res) => {
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+
+
+
+
