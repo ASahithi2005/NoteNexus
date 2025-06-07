@@ -24,8 +24,7 @@ import courseDetailRoutes from './routes/courseDetail.js';
 import courseAggregates from './routes/courseAggregates.js';
 import studentsRoutes from './routes/students.js';
 import userRoutes from './routes/users.js';
-// import summarizeRouter from './routes/summarization.js';
-
+import noteRoutes from './routes/noteRoutes.js';
 // Use routes
 app.use('/api/auth', authRoutes);
 app.use('/api/courses', courseRoutes);
@@ -34,7 +33,7 @@ app.use('/api/courseDetail', courseDetailRoutes);
 app.use('/api/courseAggregates', courseAggregates);
 app.use('/api/students', studentsRoutes);
 app.use('/api/users', userRoutes);
-// app.use('/api/courseDetail', summarizeRouter);
+app.use('/api/notes', noteRoutes);
 
 
 app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));

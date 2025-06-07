@@ -11,6 +11,7 @@ import AllAssignmentsPage from './Pages/AllAssignmentsPage';
 import StudentsPage from './Pages/StudentPage';
 import NotesPage from './Pages/NotesPage';
 import SettingsPage from './Pages/SettingsPage';
+import NoteTakingPage from './Pages/NoteTakingPage';
 
 function App() {
   const storedUser = localStorage.getItem('user');
@@ -91,6 +92,9 @@ const token = storedToken || null;
           <MainLayout><NotesPage token={token} /></MainLayout> }></Route>
           <Route path="/settings" element={
           <MainLayout><SettingsPage token={token} /></MainLayout> }></Route>
+          <Route path="/studentNotes" element={
+          <MainLayout><NoteTakingPage token={token} /></MainLayout> }></Route>
+
       </Routes>
 
     </BrowserRouter>
