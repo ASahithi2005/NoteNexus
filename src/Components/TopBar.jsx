@@ -1,4 +1,3 @@
-// src/Components/TopBar.jsx
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 
@@ -18,18 +17,19 @@ const TopBar = () => {
   }, []);
 
   return (
-    <header className="w-full mt-6 mb-4 px-6 pt-7 pl-12 flex justify-between items-center">
-      <h2 className="text-3xl font-bold text-gray-800">
+    <header className="w-full mt-4 px-4 md:px-6 pt-4 flex flex-row justify-between items-center gap-3 flex-wrap">
+
+      <h2 className="text-2xl md:text-3xl font-bold text-gray-800">
         {username ? `Hello ${username} !` : 'Welcome!'}
       </h2>
-      <div className="flex gap-4">
+      <div className="flex gap-2">
         <Link to="/signup">
-          <button className="px-4 py-1 border border-blue-600 text-blue-600 rounded hover:bg-blue-50">
+          <button className="px-3 py-1 border border-blue-600 text-blue-600 rounded hover:bg-blue-50 text-sm">
             Sign In
           </button>
         </Link>
         <Link to="/login">
-          <button className="px-4 py-1 bg-blue-600 text-white rounded hover:bg-blue-700">
+          <button className="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 text-sm">
             Log In
           </button>
         </Link>

@@ -18,8 +18,8 @@ export default function StudentsPage({ token }) {
 
   return (
     <div className="p-6">
-      <h2 className="text-2xl font-bold mb-4">All Students</h2>
-      <div className="overflow-x-auto">
+      <h2 className="text-2xl font-bold mb-4 text-center">All Students</h2>
+      <div className="overflow-x-auto max-w-full">
         <table className="min-w-full table-auto border-collapse border border-gray-300">
           <thead>
             <tr>

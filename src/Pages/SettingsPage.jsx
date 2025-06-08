@@ -96,7 +96,7 @@ export default function SettingsPage({ token }) {
 
   return (
     <div className="max-w-2xl mx-auto px-6 py-10 space-y-10 animate-fade-in">
-      <h2 className="text-4xl font-extrabold text-center text-gray-800">⚙️ Account Settings</h2>
+      <h2 className="text-4xl font-extrabold text-center text-gray-800"> Account Settings</h2>
 
       {/* Profile Info Card */}
       <div className="bg-white rounded-2xl shadow-xl p-6 space-y-4 border border-gray-200">

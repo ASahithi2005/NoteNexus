@@ -10,7 +10,6 @@ const CourseDetail = ({ user, token }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Track summaries per file: key format `${section}-${index}`
   const [fileSummaries, setFileSummaries] = useState({});
   const [fileSummaryLoading, setFileSummaryLoading] = useState({});
   const [fileSummaryError, setFileSummaryError] = useState({});
@@ -55,7 +54,6 @@ const CourseDetail = ({ user, token }) => {
       );
       if (!res.ok) throw new Error(await res.text());
       setCourse(await res.json());
-      // Clear summary state for deleted file
       const key = `${section}-${index}`;
       setFileSummaries((prev) => {
         const copy = { ...prev };
@@ -123,7 +121,6 @@ const CourseDetail = ({ user, token }) => {
       const updatedCourse = await res.json();
       setCourse(updatedCourse);
       setFile(null);
-      // Reset file input
       const inp = document.getElementById(`fileInput-${section}`);
       if (inp) inp.value = '';
     } catch (err) {
@@ -133,13 +130,10 @@ const CourseDetail = ({ user, token }) => {
     }
   };
 
-  // Summarize a specific uploaded PDF by section & index
   const handleSummarizeFile = async (section, index) => {
     const key = `${section}-${index}`;
     if (fileSummaryLoading[key]) return;
-
     setFileSummaryLoading((prev) => ({ ...prev, [key]: true }));
-    // Clear old error or summary
     setFileSummaries((prev) => {
       const copy = { ...prev };
       delete copy[key];
@@ -150,7 +144,6 @@ const CourseDetail = ({ user, token }) => {
       delete copy[key];
       return copy;
     });
-
     try {
       const res = await fetch(
         `http://localhost:5000/api/courseDetail/${courseId}/${section}/${index}/summarize`,
@@ -161,10 +154,7 @@ const CourseDetail = ({ user, token }) => {
       );
       if (!res.ok) throw new Error(await res.text());
       const data = await res.json();
-      setFileSummaries((prev) => ({
-        ...prev,
-        [key]: data.summary,
-      }));
+      setFileSummaries((prev) => ({ ...prev, [key]: data.summary }));
     } catch (err) {
       setFileSummaryError((prev) => ({
         ...prev,
@@ -175,52 +165,46 @@ const CourseDetail = ({ user, token }) => {
     }
   };
 
-  // Render each file item; summary button only for 'notes' PDFs
   const renderFileItem = (item, section, idx) => {
     if (!item.fileUrl) return null;
     const ext = item.fileUrl.split('.').pop().toLowerCase();
     const url = `http://localhost:5000/${item.fileUrl}?t=${Date.now()}`;
-
     const studentOwns =
       section === 'assignments' &&
       user?.role === 'student' &&
       item.uploadedBy?.toString() === user?.id;
     const canDelete = isMentor || studentOwns;
-
     const key = `${section}-${idx}`;
     const isPdf = ext === 'pdf';
 
     return (
-      <div key={idx} className="relative border p-3 rounded mb-2">
+      <div key={idx} className="relative border p-3 rounded mb-3">
         {isPdf ? (
           <>
             <a
               href={url}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-blue-600 underline"
+              className="text-blue-600 underline break-words"
             >
               {item.title}
             </a>
-
-            {/* Summarize button ONLY for notes */}
             {section === 'notes' && (
               <button
                 onClick={() => handleSummarizeFile(section, idx)}
                 disabled={fileSummaryLoading[key]}
-                className="ml-4 px-2 py-1 bg-green-500 text-white rounded hover:bg-green-600"
+                className="ml-3 px-2 py-1 bg-green-500 text-white rounded hover:bg-green-600 text-xs"
               >
                 {fileSummaryLoading[key] ? 'Summarizing…' : 'Summarize'}
               </button>
             )}
-
             {fileSummaryError[key] && (
-              <p className="text-red-500 mt-1">{fileSummaryError[key]}</p>
+              <p className="text-red-500 mt-1 text-xs">{fileSummaryError[key]}</p>
             )}
             {fileSummaries[key] && (
-              <div className="mt-2 p-3 bg-gray-100 border rounded">
-                <h3 className="font-semibold mb-1">Summary:</h3>
-                <p className="whitespace-pre-line text-gray-800">
+              <div className="mt-2 p-2 bg-gray-100 border rounded">
+                <h3 className="font-semibold mb-1 text-sm">Summary:</h3>
+                <p className="whitespace-pre-line text-gray-800 text-sm">
                   {fileSummaries[key]}
                 </p>
               </div>
@@ -230,20 +214,18 @@ const CourseDetail = ({ user, token }) => {
           <img
             src={url}
             alt={item.title}
-            className="max-w-xs max-h-40 mb-2 rounded"
+            className="max-w-full max-h-40 mb-2 rounded"
           />
         )}
-
-        <p className="mt-2">{item.title}</p>
-        <p className="text-sm text-gray-500">
-  Uploaded by{' '}
-  {item.uploadedBy?.name
-    ? item.uploadedBy.name
-    : (item.role === 'mentor' ? 'Mentor' : 'Student')}
-</p>
-
-
-
+        <p className="mt-2 text-sm">{item.title}</p>
+        <p className="text-xs text-gray-500">
+          Uploaded by{' '}
+          {item.uploadedBy?.name
+            ? item.uploadedBy.name
+            : item.role === 'mentor'
+            ? 'Mentor'
+            : 'Student'}
+        </p>
         {canDelete && (
           <button
             onClick={() => handleDeleteFile(section, idx)}
@@ -261,7 +243,6 @@ const CourseDetail = ({ user, token }) => {
       (f) => f.type === 'question'
     );
     const answers = (course.assignments || []).filter((f) => f.type === 'answer');
-
     return (
       <>
         <div className="mb-4">
@@ -269,53 +250,53 @@ const CourseDetail = ({ user, token }) => {
           {questions.length > 0 ? (
             questions.map((it, i) => renderFileItem(it, 'assignments', i))
           ) : (
-            <p>No questions.</p>
+            <p className="text-gray-600 text-sm">No questions available.</p>
           )}
-
           {canUpload('assignments') && (
             <div className="mt-2">
               <input
                 id="fileInput-assignments"
                 type="file"
                 onChange={handleFileChange}
-                className="mb-2"
+                className="mb-2 w-full sm:w-auto"
               />
               <button
                 onClick={() => handleUpload('assignments')}
                 disabled={uploading}
-                className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+                className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 text-sm sm:w-auto"
               >
-                {uploading ? 'Uploading...' : 'Add Assignment Question'}
+                {uploading ? 'Uploading...' : 'Add'}
               </button>
             </div>
           )}
         </div>
-
         <div className="mb-4">
           <h3 className="font-semibold">Answers</h3>
           {answers.length > 0 ? (
             answers.map((it, i) => renderFileItem(it, 'assignments', i))
           ) : (
-            <p>No answers.</p>
+            <p className="text-gray-600 text-sm">No answers available.</p>
           )}
         </div>
       </>
     );
   };
 
-  if (loading) return <div>Loading...</div>;
-  if (error) return <div className="text-red-600">{error}</div>;
+  if (loading) return <div className="p-4">Loading...</div>;
+  if (error) return <div className="p-4 text-red-600">{error}</div>;
 
   return (
-    <div className="max-w-4xl mx-auto p-6 bg-white rounded shadow mt-8">
-      <h1 className="text-3xl font-bold mb-4">{course.title}</h1>
-      <div className="flex space-x-4 border-b mb-6">
+   <div className="w-full max-w-full sm:max-w-5xl mx-auto p-4 sm:p-6 bg-white rounded shadow mt-4 sm:mt-8">
+      <h1 className="text-2xl sm:text-3xl font-bold mb-4 text-center sm:text-left">
+        {course.title}
+      </h1>
+      <div className="flex flex-wrap gap-3 border-b mb-6 justify-center sm:justify-start">
         {['description', 'syllabus', 'notes', 'assignments'].map((tab) => (
           <button
             key={tab}
-            className={`pb-2 ${
+            className={`pb-2 text-sm sm:text-base ${
               activeTab === tab
-                ? 'border-b-2 border-blue-600 font-semibold'
+                ? 'border-b-2 border-blue-600 font-semibold text-blue-600'
                 : 'text-gray-600'
             }`}
             onClick={() => setActiveTab(tab)}
@@ -324,16 +305,17 @@ const CourseDetail = ({ user, token }) => {
           </button>
         ))}
       </div>
-
       <div>
         {activeTab === 'description' &&
           (!editingDesc ? (
             <>
-              <p>{course.description}</p>
+              <p className="text-gray-700 whitespace-pre-line text-sm">
+                {course.description}
+              </p>
               {isMentor && (
                 <button
                   onClick={() => setEditingDesc(true)}
-                  className="mt-2 px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700"
+                  className="mt-3 px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 text-sm"
                 >
                   Modify
                 </button>
@@ -343,14 +325,14 @@ const CourseDetail = ({ user, token }) => {
             <div>
               <textarea
                 rows={4}
-                className="w-full border p-2 rounded"
+                className="w-full border p-2 rounded text-sm"
                 value={newDescription}
                 onChange={(e) => setNewDescription(e.target.value)}
               />
-              <div className="mt-2 space-x-2">
+              <div className="mt-2 flex flex-wrap gap-2">
                 <button
                   onClick={handleDescriptionSave}
-                  className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
+                  className="px-3 py-1 bg-green-600 text-white rounded hover:bg-green-700 text-sm"
                 >
                   Save
                 </button>
@@ -359,22 +341,22 @@ const CourseDetail = ({ user, token }) => {
                     setEditingDesc(false);
                     setNewDescription(course.description);
                   }}
-                  className="px-4 py-2 bg-gray-400 text-white rounded hover:bg-gray-500"
+                  className="px-3 py-1 bg-gray-400 text-white rounded hover:bg-gray-500 text-sm"
                 >
                   Cancel
                 </button>
               </div>
             </div>
           ))}
-
         {(activeTab === 'syllabus' || activeTab === 'notes') && (
           <>
             {course[activeTab]?.length > 0 ? (
-              course[activeTab].map((it, i) => renderFileItem(it, activeTab, i))
+              <div className="grid gap-3">
+                {course[activeTab].map((it, i) => renderFileItem(it, activeTab, i))}
+              </div>
             ) : (
-              <p>No {activeTab}.</p>
+              <p className="text-gray-600 text-sm">No {activeTab} available.</p>
             )}
-
             {canUpload(activeTab) && (
               <div className="mt-4">
                 <input
@@ -382,12 +364,12 @@ const CourseDetail = ({ user, token }) => {
                   type="file"
                   accept="application/pdf"
                   onChange={handleFileChange}
-                  className="mb-2"
+                  className="mb-2 w-full sm:w-auto"
                 />
                 <button
                   onClick={() => handleUpload(activeTab)}
                   disabled={uploading}
-                  className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+                  className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 text-sm w-full sm:w-auto"
                 >
                   {uploading
                     ? 'Uploading...'
@@ -398,27 +380,9 @@ const CourseDetail = ({ user, token }) => {
             )}
           </>
         )}
-
         {activeTab === 'assignments' && (
           <>
             {renderAssignments()}
-            {canUpload('assignments') && (
-              <div className="mt-4">
-                <input
-                  id="fileInput-assignments"
-                  type="file"
-                  onChange={handleFileChange}
-                  className="mb-2"
-                />
-                <button
-                  onClick={() => handleUpload('assignments')}
-                  disabled={uploading}
-                  className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-                >
-                  {uploading ? 'Uploading...' : 'Upload Assignment'}
-                </button>
-              </div>
-            )}
           </>
         )}
       </div>

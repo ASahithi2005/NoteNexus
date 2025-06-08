@@ -2,13 +2,12 @@
 import React, { useState, useEffect } from 'react';
 
 const colorOptions = {
-  CoralRed: '#F7786B',
-  PastelYellow: '#FFD679',
-  TealGreen: '#1FDA9A',
-  DustyBlue: '#2E7D91',
-  TerracottaOrange: '#EE6C4D',
+  Red: '#faa798',
+  Yellow: '#faf898',
+  Green: '#98facc',
+  Blue: '#98befa',
+  Pink:'#fa98e0',
 };
-
 
 const AddCourse = () => {
   const [formData, setFormData] = useState({
@@ -83,55 +82,68 @@ const AddCourse = () => {
   };
 
   return (
-    <div className="min-h-screen flex justify-center items-center bg-gray-100">
-      <form
-        className="bg-white p-8 rounded-xl shadow-md w-full max-w-lg"
-        onSubmit={handleSubmit}
-      >
-        <h2 className="text-2xl font-bold mb-6 text-center">Create New Course</h2>
+    <div className="flex flex-1 justify-center items-center min-h-screen bg-gray-100 px-4">
+      <div className="bg-white shadow-md rounded-lg p-6 w-full max-w-md">
+        <h2 className="text-2xl font-bold mb-6 text-center">
+          Create New Course
+        </h2>
+        <form onSubmit={handleSubmit}>
+          <div className="mb-4">
+            <label className="block text-gray-700 font-semibold mb-2">
+              Course Title
+            </label>
+            <input
+              type="text"
+              name="title"
+              value={formData.title}
+              onChange={handleChange}
+              className="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+              required
+            />
+          </div>
 
-        <label className="block mb-2 font-medium">Course Title</label>
-        <input
-          type="text"
-          name="title"
-          value={formData.title}
-          onChange={handleChange}
-          className="w-full mb-4 p-2 border rounded"
-          required
-        />
+          <div className="mb-4">
+            <label className="block text-gray-700 font-semibold mb-2">
+              Course Description
+            </label>
+            <textarea
+              name="description"
+              value={formData.description}
+              onChange={handleChange}
+              className="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+              rows={4}
+              required
+            />
+          </div>
 
-        <label className="block mb-2 font-medium">Course Description</label>
-        <textarea
-          name="description"
-          value={formData.description}
-          onChange={handleChange}
-          className="w-full mb-4 p-2 border rounded"
-          required
-        />
+          <div className="mb-6">
+            <label className="block text-gray-700 font-semibold mb-2">
+              Background Color
+            </label>
+            <select
+              name="colorName"
+              value={formData.colorName}
+              onChange={handleChange}
+              className="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+              required
+            >
+              <option value="">Select a color</option>
+              {Object.entries(colorOptions).map(([name]) => (
+                <option key={name} value={name}>
+                  {name}
+                </option>
+              ))}
+            </select>
+          </div>
 
-        <label className="block mb-2 font-medium">Background Color</label>
-        <select
-          name="colorName"
-          value={formData.colorName}
-          onChange={handleChange}
-          className="w-full mb-6 p-2 border rounded"
-          required
-        >
-          <option value="">Select a color</option>
-          {Object.entries(colorOptions).map(([name, code]) => (
-            <option key={name} value={name}>
-              {name}
-            </option>
-          ))}
-        </select>
-
-        <button
-          type="submit"
-          className="w-full bg-blue-600 text-white p-2 rounded hover:bg-blue-700"
-        >
-          Create Course
-        </button>
-      </form>
+          <button
+            type="submit"
+            className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 transition-colors"
+          >
+            Create Course
+          </button>
+        </form>
+      </div>
     </div>
   );
 };

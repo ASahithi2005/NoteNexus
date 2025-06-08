@@ -10,7 +10,7 @@ export default function NotesPage({ token }) {
     })
       .then((res) => (res.ok ? res.json() : Promise.reject(res.statusText)))
       .then((data) => {
-        console.log("Fetched notes:", data); // Inspect data shape
+        console.log("Fetched notes:", data);
         setNotes(data);
       })
       .catch((err) => setError(err.toString()));
@@ -20,22 +20,27 @@ export default function NotesPage({ token }) {
   if (!notes.length) return <p>No notes to show.</p>;
 
   return (
-    <div className="p-6">
-      <h2 className="text-2xl font-bold mb-4">All Notes</h2>
-      <div className="space-y-4">
+    <div className="p-6 max-w-7xl">
+      <h2 className="text-3xl font-bold mb-8 text-center md:text-center">All Notes</h2>
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
         {notes.map((note) => (
-          <div key={note._id} className="border p-4 rounded">
-            <h3 className="text-xl font-semibold">{note?.title || "Untitled Note"}</h3>
-            <p className="text-sm text-gray-600">Course: {note?.courseTitle || "Unknown"}</p>
-            <p className="text-sm text-gray-500">
+          <div
+            key={note._id}
+            className="border rounded-lg p-6 shadow-sm hover:shadow-md transition-shadow duration-200"
+          >
+            <h3 className="text-1xl font-semibold mb-2">{note?.title || "Untitled Note"}</h3>
+            <p className="text-md font-medium mb-1">Course: {note?.courseTitle || "Unknown"}</p>
+            <p className="text-sm text-gray-500 mb-3">
               Uploaded:{" "}
-              {note?.uploadedAt ? new Date(note.uploadedAt).toLocaleString() : "Date not available"}
+              {note?.uploadedAt
+                ? new Date(note.uploadedAt).toLocaleString()
+                : "Date not available"}
             </p>
             <a
               href={`http://localhost:5000/${note.fileUrl}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="mt-2 inline-block text-blue-600 underline"
+              className="inline-block text-blue-600 underline hover:text-blue-800"
             >
               Open File
             </a>

@@ -12,6 +12,7 @@ import StudentsPage from './Pages/StudentPage';
 import NotesPage from './Pages/NotesPage';
 import SettingsPage from './Pages/SettingsPage';
 import NoteTakingPage from './Pages/NoteTakingPage';
+import Footer from './Components/Footer';
 
 function App() {
   const storedUser = localStorage.getItem('user');
@@ -27,7 +28,9 @@ const token = storedToken || null;
           element={
             <ErrorBoundary>
               <Dashboard />
+              <Footer/>
             </ErrorBoundary>
+
           }
         />
         <Route

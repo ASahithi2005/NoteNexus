@@ -1,3 +1,4 @@
+// DashBoard.jsx
 import React, { useEffect, useState } from 'react';
 import SideBar from '../Components/SideBar';
 import TopBar from '../Components/TopBar';
@@ -11,10 +12,8 @@ const DashBoard = () => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // Retrieve token once
   const token = localStorage.getItem('token');
 
-  // Load user if logged in
   useEffect(() => {
     const storedUser = localStorage.getItem('user');
     if (storedUser) {
@@ -22,13 +21,12 @@ const DashBoard = () => {
         const parsedUser = JSON.parse(storedUser);
         setUser(parsedUser);
       } catch (e) {
-        console.error('Error parsing user from localStorage:', e);
-        setError('Invalid user data in localStorage');
+        console.error('Error parsing user:', e);
+        setError('Invalid user data');
       }
     }
   }, []);
 
-  // Fetch courses and trust backend's joined flags
   useEffect(() => {
     const fetchCourses = async () => {
       setLoading(true);
@@ -38,18 +36,18 @@ const DashBoard = () => {
             Authorization: token ? `Bearer ${token}` : '',
           },
         });
+
         const data = await response.json();
 
         if (response.ok) {
-          // Use backend's joined info directly
           setAvailableSubjects(data);
           setError(null);
         } else {
           setError(data.message || 'Failed to fetch courses');
         }
       } catch (err) {
-        console.error('Error fetching courses:', err);
-        setError('Error fetching data');
+        console.error('Fetch error:', err);
+        setError('Error fetching courses');
       } finally {
         setLoading(false);
       }
@@ -58,7 +56,6 @@ const DashBoard = () => {
     fetchCourses();
   }, [user, token]);
 
-  // Join course handler
   const handleJoin = async (courseId) => {
     if (!user || user.role !== 'student') {
       alert('Only students can join courses. Please log in as a student.');
@@ -76,12 +73,11 @@ const DashBoard = () => {
 
       if (response.ok) {
         setAvailableSubjects((prev) =>
-          prev.map((sub) =>
-            sub._id === courseId ? { ...sub, joined: true } : sub
+          prev.map((course) =>
+            course._id === courseId ? { ...course, joined: true } : course
           )
         );
 
-        // Update user joinedCourses in local storage and state
         const updatedUser = {
           ...user,
           joinedCourses: [...(user.joinedCourses || []), courseId],
@@ -98,7 +94,6 @@ const DashBoard = () => {
     }
   };
 
-  // Delete course handler (mentor only)
   const handleDelete = async (courseId) => {
     if (!user || user.role !== 'mentor') {
       alert('Only mentors can delete courses.');
@@ -130,66 +125,52 @@ const DashBoard = () => {
     }
   };
 
-  // Fetch enrolled students for a course (mentor only)
-  const fetchEnrolledStudents = async (courseId) => {
-    try {
-      const response = await fetch(`http://localhost:5000/api/courses/${courseId}/students`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to fetch students');
-      }
-      const data = await response.json();
-      return data.students; // expected array of { _id, name, email }
-    } catch (err) {
-      console.error('Fetch Enrolled Students Error:', err);
-      throw err;
-    }
-  };
-
   return (
-    <div className="flex h-screen bg-gray-100">
+    <div className="flex flex-col md:flex-row bg-gray-100 min-h-screen">
       <SideBar />
-      <div className="flex-1 overflow-y-auto">
+
+      <div className="flex-1 flex flex-col overflow-hidden">
         <TopBar />
-        <BannerImage />
-        <main className="p-6">
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="text-2xl font-semibold">Available Courses</h2>
+        <div className="px-4 md:px-6 mt-4">
+          <BannerImage />
 
-            {user && user.role === 'mentor' && (
-              <Link
-                to="/addcourse"
-                className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
-              >
-                Create Course
-              </Link>
-            )}
-          </div>
+          <main className="py-6">
+            <div className="flex md:flex-row justify-between items-start md:items-center gap-3 mb-6">
+              <h2 className="text-xl md:text-2xl font-semibold text-gray-800">
+                Available Courses
+              </h2>
 
-          {loading ? (
-            <p>Loading courses...</p>
-          ) : error ? (
-            <p className="text-red-600">{error}</p>
-          ) : availableSubjects.length === 0 ? (
-            <p className="text-gray-600">No available courses at the moment.</p>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {availableSubjects.map((course) => (
-                <DashBoardCard
-                  key={course._id}
-                  subject={course}
-                  onJoin={handleJoin}
-                  onDelete={handleDelete} 
-                  user={user}              
-                />
-              ))}
+              {user?.role === 'mentor' && (
+                <Link
+                  to="/addcourse"
+                  className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 text-white px-3 py-1 rounded text-sm"
+                >
+                  Create Course
+                </Link>
+              )}
             </div>
-          )}
-        </main>
+
+            {loading ? (
+              <p className="text-gray-600">Loading courses...</p>
+            ) : error ? (
+              <p className="text-red-600">{error}</p>
+            ) : availableSubjects.length === 0 ? (
+              <p className="text-gray-600">No available courses at the moment.</p>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-3 gap-5 md:gap-6 px-4 md:px-5">
+                {availableSubjects.map((course) => (
+                  <DashBoardCard
+                    key={course._id}
+                    subject={course}
+                    onJoin={handleJoin}
+                    onDelete={handleDelete}
+                    user={user}
+                  />
+                ))}
+              </div>
+            )}
+          </main>
+        </div>
       </div>
     </div>
   );

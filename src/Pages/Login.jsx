@@ -21,15 +21,11 @@ const Login = () => {
       });
 
       const data = await response.json();
-      console.log('Login response:', data); // debug
+      console.log('Login response:', data);
 
       if (response.ok && data.token && data.user) {
-        // Store token and user with role
         localStorage.setItem('token', data.token);
         localStorage.setItem('user', JSON.stringify(data.user));
-        console.log('User stored in localStorage:', data.user);
-
-        // Navigate to dashboard or home
         window.location.href = '/';
       } else {
         alert(data.message || data.msg || 'Login failed');
@@ -41,9 +37,9 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100 px-4">
+    <div className="flex flex-1 justify-center items-center min-h-screen bg-gray-100 px-4">
       <form
-        className="bg-white p-8 rounded-xl shadow-md w-full max-w-md"
+        className="bg-white p-8 md:p-10 rounded-xl shadow-md w-full max-w-md"
         onSubmit={handleSubmit}
       >
         <h2 className="text-2xl font-bold mb-6 text-center">Log In</h2>

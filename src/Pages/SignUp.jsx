@@ -26,7 +26,7 @@ const SignUp = () => {
         alert('Signup successful!');
         localStorage.setItem('token', data.token);
         localStorage.setItem('user', JSON.stringify(data.user));
-        localStorage.setItem('role', data.user.role); // ✅ Save role
+        localStorage.setItem('role', data.user.role);
         window.location.href = '/';
       } else {
         alert(data.msg || data.error || 'Signup failed');
@@ -38,8 +38,8 @@ const SignUp = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100 px-4">
-      <form className="bg-white p-8 rounded-xl shadow-md w-full max-w-md" onSubmit={handleSubmit}>
+    <div className="flex flex-1 justify-center items-center min-h-screen bg-gray-100 px-4">
+      <form className="bg-white p-8 md:p-10 rounded-xl shadow-md w-full max-w-md" onSubmit={handleSubmit}>
         <h2 className="text-2xl font-bold mb-6 text-center">Sign Up</h2>
         <input
           type="text"
